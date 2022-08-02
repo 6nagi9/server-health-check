@@ -1,0 +1,26 @@
+{
+  "name": "tomcat-health-check",
+  "version": "1.0.0",
+  "description": "Scriptlet to check health of tomcat and restart.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/6nagi9/server-health-check.git"
+  },
+  "keywords": [
+    "tomcat",
+    "server",
+    "restart",
+    "health",
+    "check"
+  ],
+  "author": "Balvinder Singh Nagi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/6nagi9/server-health-check/issues"
+  },
+  "homepage": "https://github.com/6nagi9/server-health-check#readme"
+}
