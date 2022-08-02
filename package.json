@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/6nagi9/server-health-check#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "node-cron": "^3.0.1",
     "uuid": "^8.3.2"
   }
