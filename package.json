@@ -1,8 +1,9 @@
 {
-  "name": "tomcat-health-check",
+  "name": "server-health-check",
   "version": "1.0.0",
-  "description": "Scriptlet to check health of tomcat and restart.",
-  "main": "index.js",
+  "description": "App to check server health and restart if required.",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,5 +23,9 @@
   "bugs": {
     "url": "https://github.com/6nagi9/server-health-check/issues"
   },
-  "homepage": "https://github.com/6nagi9/server-health-check#readme"
+  "homepage": "https://github.com/6nagi9/server-health-check#readme",
+  "dependencies": {
+    "node-cron": "^3.0.1",
+    "uuid": "^8.3.2"
+  }
 }
