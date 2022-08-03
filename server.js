@@ -1,5 +1,9 @@
 import { schedule } from "node-cron";
 import axios from "axios";
+import dotenv from "dotenv";
+import { exec } from 'node:child_process';
+
+dotenv.config();
 
 console.log(process.env)
 
@@ -17,11 +21,31 @@ async function serverHealthCheck() {
     const response = await axios.get(PATH, {
       timeout: 30000,
     });
-    if (response.statusCode == 200)
-      console.log("Server alive.", response.statusCode, response.statusMessage);
-  } catch (error) {
-    console.log("Server dead!", error.message);
+    if (response.status==200 || response.statusCode == 200)
+      console.log("Server alive.", 200, 'OK');
+    else{
+      console.log("Server unresponsive!", response);
+      console.log("Calling shell exec")
+      exec('service tomcat restart',execCallback);
+      console.log("Called shell exec")
+    }
+    
+  } catch (err) {
+    //console.log("Server dead!", err);
+    console.log("Calling shell exec")
+    exec('service tomcat restart',execCallback );
+    console.log("Called shell exec")
   }
 }
+
+const execCallback=(error, stdout, stderr) => {
+  if (error) {
+    console.error(`exec error: ${error}`);
+    return;
+  }
+  console.log(`stdout: ${stdout}`);
+  console.error(`stderr: ${stderr}`);
+}
+
 // Schedule a job to run every two minutes
-const job = schedule("*/1 * * * *", serverHealthCheck);
+const job = schedule("*/5 * * * *", serverHealthCheck);
