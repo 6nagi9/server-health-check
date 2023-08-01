@@ -1,18 +1,30 @@
 import { schedule } from "node-cron";
 import axios from "axios";
 import dotenv from "dotenv";
-import { exec } from 'node:child_process';
+import path from "path";
+import { fileURLToPath } from "url";
+import { exec } from "node:child_process";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-console.log(process.env)
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const TARGET_PROTOCOL = process.env.TARGET_PROTOCOL||"http"
-const TARGET_HOST = process.env.TARGET_HOST||"localhost"
-const TARGET_PORT = process.env.TARGET_PORT||"80"
-const TARGET_CONTEXT = process.env.TARGET_CONTEXT||"health"
+console.log(process.env);
 
-const PATH = TARGET_PROTOCOL+"://"+TARGET_HOST+":"+TARGET_PORT+"/"+TARGET_CONTEXT;
+const TARGET_PROTOCOL = process.env.TARGET_PROTOCOL || "http";
+const TARGET_HOST = process.env.TARGET_HOST || "localhost";
+const TARGET_PORT = process.env.TARGET_PORT || "80";
+const TARGET_CONTEXT = process.env.TARGET_CONTEXT || "health";
+
+const PATH =
+  TARGET_PROTOCOL +
+  "://" +
+  TARGET_HOST +
+  ":" +
+  TARGET_PORT +
+  "/" +
+  TARGET_CONTEXT;
 
 async function serverHealthCheck() {
   console.log("Running scheduled job");
@@ -21,31 +33,30 @@ async function serverHealthCheck() {
     const response = await axios.get(PATH, {
       timeout: 30000,
     });
-    if (response.status==200 || response.statusCode == 200)
-      console.log("Server alive.", 200, 'OK');
-    else{
+    if (response.status == 200 || response.statusCode == 200)
+      console.log("Server alive.", 200, "OK");
+    else {
       console.log("Server unresponsive!", response);
-      console.log("Calling shell exec")
-      exec('service tomcat restart',execCallback);
-      console.log("Called shell exec")
+      console.log("Calling shell exec");
+      exec("service tomcat restart", execCallback);
+      console.log("Called shell exec");
     }
-    
   } catch (err) {
     //console.log("Server dead!", err);
-    console.log("Calling shell exec")
-    exec('service tomcat restart',execCallback );
-    console.log("Called shell exec")
+    console.log("Calling shell exec");
+    exec("service tomcat restart", execCallback);
+    console.log("Called shell exec");
   }
 }
 
-const execCallback=(error, stdout, stderr) => {
+const execCallback = (error, stdout, stderr) => {
   if (error) {
     console.error(`exec error: ${error}`);
     return;
   }
   console.log(`stdout: ${stdout}`);
   console.error(`stderr: ${stderr}`);
-}
+};
 
 // Schedule a job to run every two minutes
 const job = schedule("*/5 * * * *", serverHealthCheck);
