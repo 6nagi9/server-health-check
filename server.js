@@ -27,6 +27,8 @@ const SMTP_CONFIG = {
   secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
 };
 
+const STORAGE_NOTIFY = process.env.STORAGE_NOTIFY || "false";
+// true or false
 const PATH =
   TARGET_PROTOCOL +
   "://" +
@@ -35,6 +37,8 @@ const PATH =
   TARGET_PORT +
   "/" +
   TARGET_CONTEXT;
+
+console.log("Found health check path.", PATH);
 
 // Create email transporter
 const transporter = nodemailer.createTransport(SMTP_CONFIG);
@@ -131,12 +135,15 @@ const execCallback = (error, stdout, stderr) => {
   console.error(`stderr: ${stderr}`);
 };
 
-// Schedule a job to run every two minutes
+console.log("Cron jobs scheduled:");
+
+// Schedule a job to run every 5 minutes
 const healthJob = schedule("*/5 * * * *", serverHealthCheck);
+console.log("- Health check every 5 minutes");
 
 // Schedule NAS storage check to run daily at 8 AM
-const storageJob = schedule("0 8 * * *", checkNasStorage);
+if (STORAGE_NOTIFY === "true") {
+  schedule("0 8 * * *", checkNasStorage);
 
-console.log("Cron jobs scheduled:");
-console.log("- Health check every 5 minutes");
-console.log("- NAS storage check daily at 8 AM");
+  console.log("- NAS storage check daily at 8 AM");
+}
