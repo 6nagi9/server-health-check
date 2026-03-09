@@ -105,8 +105,10 @@ async function checkNasStorage() {
         const available = values[3];
         const usePercentage = values[4];
 
-        // Send email
-        const mailOptions = {
+        const percentageValue = parseInt(usePercentage.replace('%', ''), 10);
+
+        // Always send daily report email
+        const dailyMailOptions = {
           from: EMAIL_FROM,
           to: EMAIL_RECIPIENTS,
           subject: `Daily NAS Storage Report - ${latestNasPath}`,
@@ -114,10 +116,30 @@ async function checkNasStorage() {
         };
 
         try {
-          const info = await transporter.sendMail(mailOptions);
-          console.log(`Email sent: ${info.messageId}`);
+          const info = await transporter.sendMail(dailyMailOptions);
+          console.log(`Daily report email sent: ${info.messageId}`);
         } catch (emailError) {
-          console.error(`Error sending email: ${emailError}`);
+          console.error(`Error sending daily report email: ${emailError}`);
+        }
+
+        if (percentageValue >= 90) {
+          // Send alert email
+          const alertMailOptions = {
+            from: EMAIL_FROM,
+            to: process.env.EMAIL_TO || "balivada.sandeep@eil.co.in",
+            cc: process.env.EMAIL_CC || "charanjeet.singh@eil.co.in, vivek.kumar@eil.co.in",
+            subject: "Request to increase DMZ volume size.",
+            text: `Dear Sir,\n\nKindly increase the size of the SAN volume allocated to DMZ servers.\n\nThe current usage of ${latestNasPath} has reached ${usePercentage} (Available: ${available}). Immediate action is requested to prevent any service disruption.\n\nRegards,\nEIL EngDMS TEAM\n\n---\nSystem Details:\n${diskInfo}`,
+          };
+
+          try {
+            const info = await transporter.sendMail(alertMailOptions);
+            console.log(`Alert Email sent: ${info.messageId}`);
+          } catch (emailError) {
+            console.error(`Error sending alert email: ${emailError}`);
+          }
+        } else {
+          console.log(`Storage usage is ${usePercentage} (under 90%). No alert email sent.`);
         }
       });
     });
