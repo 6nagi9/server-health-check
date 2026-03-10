@@ -122,14 +122,30 @@ async function checkNasStorage() {
           console.error(`Error sending daily report email: ${emailError}`);
         }
 
-        if (percentageValue >= 90) {
+        let availableGB = 0;
+        const availValue = parseFloat(available);
+        const upperAvail = available.toUpperCase();
+        
+        if (upperAvail.includes('T')) {
+          availableGB = availValue * 1024;
+        } else if (upperAvail.includes('G')) {
+          availableGB = availValue;
+        } else if (upperAvail.includes('M')) {
+          availableGB = availValue / 1024;
+        } else if (upperAvail.includes('K')) {
+          availableGB = availValue / (1024 * 1024);
+        } else {
+          availableGB = availValue / (1024 * 1024 * 1024); // Assuming bytes if no unit
+        }
+
+        if (availableGB <= 120) {
           // Send alert email
           const alertMailOptions = {
             from: EMAIL_FROM,
             to: process.env.EMAIL_TO || "balivada.sandeep@eil.co.in",
             cc: process.env.EMAIL_CC || "charanjeet.singh@eil.co.in, vivek.kumar@eil.co.in",
             subject: "Request to increase DMZ volume size.",
-            text: `Dear Sir,\n\nKindly increase the size of the SAN volume allocated to DMZ servers.\n\nThe current usage of ${latestNasPath} has reached ${usePercentage} (Available: ${available}). Immediate action is requested to prevent any service disruption.\n\nRegards,\nEIL EngDMS TEAM\n\n---\nSystem Details:\n${diskInfo}`,
+            text: `Dear Sir,\n\nKindly increase the size of the SAN volume allocated to DMZ servers.\n\nThe current free space of ${latestNasPath} has dropped to ${available}. Immediate action is requested to prevent any service disruption.\n\nRegards,\nEIL EngDMS TEAM\n\n---\nSystem Details:\n${diskInfo}`,
           };
 
           try {
@@ -139,7 +155,7 @@ async function checkNasStorage() {
             console.error(`Error sending alert email: ${emailError}`);
           }
         } else {
-          console.log(`Storage usage is ${usePercentage} (under 90%). No alert email sent.`);
+          console.log(`Free space is ${available} (greater than 120GB). No alert email sent.`);
         }
       });
     });
